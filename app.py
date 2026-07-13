@@ -787,42 +787,55 @@ def _add_to_instantly_sequence(lead):
 @app.route("/api/debug-slack")
 def debug_slack():
     import requests as _req
-    token   = os.environ.get("SLACK_TOKEN", "")
-    channel = os.environ.get("SLACK_LEADS_CHANNEL", "")
+    import json as _json
+    token   = os.environ.get("SLACK_TOKEN", "").strip()
+    token   = token.encode("ascii", errors="ignore").decode("ascii")
+    channel = os.environ.get("SLACK_LEADS_CHANNEL", "").strip()
     try:
         resp = _req.post(
             "https://slack.com/api/chat.postMessage",
-            json={"channel": channel, "text": ":white_check_mark: Railway Slack test"},
-            headers={"Authorization": f"Bearer {token}"},
+            data=_json.dumps({"channel": channel, "text": ":white_check_mark: Railway Slack test"}).encode("utf-8"),
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json; charset=utf-8",
+            },
             timeout=5,
         )
         slack_result = resp.text
     except Exception as e:
         slack_result = str(e)
-    return jsonify({"token_prefix": token[:12] if token else "MISSING", "channel": channel or "MISSING", "slack_response": slack_result})
+    return jsonify({"token_prefix": token[:8] + "..." if token else "MISSING", "channel": channel or "MISSING", "slack_response": slack_result})
 
 
 def _slack_notify_lead(name: str, phone: str, email: str, business: str):
     """Fire a Slack message to #leads when a preview form is submitted."""
     import requests as _req
-    token   = os.environ.get("SLACK_TOKEN", "")
-    channel = os.environ.get("SLACK_LEADS_CHANNEL", "leads")
+    import json as _json
+    token   = os.environ.get("SLACK_TOKEN", "").strip()
+    # Strip any non-ASCII characters that would break HTTP header encoding
+    token   = token.encode("ascii", errors="ignore").decode("ascii")
+    channel = os.environ.get("SLACK_LEADS_CHANNEL", "leads").strip()
     if not token:
+        print("[Slack] lead notify skipped — no token")
         return
     text = (
         f":fire: *New lead from preview site!*\n"
         f">*Business:* {business}\n"
         f">*Name:* {name}\n"
         f">*Phone:* {phone}\n"
-        f">*Email:* {email or '—'}"
+        f">*Email:* {email or '-'}"
     )
     try:
-        _req.post(
+        resp = _req.post(
             "https://slack.com/api/chat.postMessage",
-            json={"channel": channel, "text": text, "unfurl_links": False},
-            headers={"Authorization": f"Bearer {token}"},
+            data=_json.dumps({"channel": channel, "text": text, "unfurl_links": False}).encode("utf-8"),
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json; charset=utf-8",
+            },
             timeout=5,
         )
+        print(f"[Slack] lead notify: {resp.text[:200]}")
     except Exception as e:
         print(f"[Slack] lead notify failed: {e}")
 
