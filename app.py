@@ -788,14 +788,18 @@ def _add_to_instantly_sequence(lead):
 def debug_slack():
     import requests as _req
     token   = os.environ.get("SLACK_TOKEN", "")
-    channel = os.environ.get("SLACK_LEADS_CHANNEL", "leads")
-    resp = _req.post(
-        "https://slack.com/api/chat.postMessage",
-        json={"channel": channel, "text": ":white_check_mark: Railway Slack test"},
-        headers={"Authorization": f"Bearer {token}"},
-        timeout=5,
-    )
-    return jsonify({"token_prefix": token[:10], "channel": channel, "slack": resp.json()})
+    channel = os.environ.get("SLACK_LEADS_CHANNEL", "")
+    try:
+        resp = _req.post(
+            "https://slack.com/api/chat.postMessage",
+            json={"channel": channel, "text": ":white_check_mark: Railway Slack test"},
+            headers={"Authorization": f"Bearer {token}"},
+            timeout=5,
+        )
+        slack_result = resp.text
+    except Exception as e:
+        slack_result = str(e)
+    return jsonify({"token_prefix": token[:12] if token else "MISSING", "channel": channel or "MISSING", "slack_response": slack_result})
 
 
 def _slack_notify_lead(name: str, phone: str, email: str, business: str):
