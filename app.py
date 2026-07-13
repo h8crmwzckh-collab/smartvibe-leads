@@ -784,6 +784,20 @@ def _add_to_instantly_sequence(lead):
         print(f"[Instantly] Failed to add {lead.get('name')}: {e}")
 
 
+@app.route("/api/debug-slack")
+def debug_slack():
+    import requests as _req
+    token   = os.environ.get("SLACK_TOKEN", "")
+    channel = os.environ.get("SLACK_LEADS_CHANNEL", "leads")
+    resp = _req.post(
+        "https://slack.com/api/chat.postMessage",
+        json={"channel": channel, "text": ":white_check_mark: Railway Slack test"},
+        headers={"Authorization": f"Bearer {token}"},
+        timeout=5,
+    )
+    return jsonify({"token_prefix": token[:10], "channel": channel, "slack": resp.json()})
+
+
 def _slack_notify_lead(name: str, phone: str, email: str, business: str):
     """Fire a Slack message to #leads when a preview form is submitted."""
     import requests as _req
