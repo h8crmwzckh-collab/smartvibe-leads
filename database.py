@@ -17,6 +17,50 @@ def get_db():
 
 def init_db():
     with get_db() as conn:
+        # Create tables first so migrations below never run on a missing table
+        conn.executescript("""
+        CREATE TABLE IF NOT EXISTS leads (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            owner_name TEXT,
+            address TEXT,
+            city TEXT,
+            state TEXT,
+            phone TEXT,
+            email TEXT,
+            website TEXT,
+            business_type TEXT,
+            priority TEXT DEFAULT 'Cold',
+            quality_score INTEGER DEFAULT 0,
+            facebook_url TEXT,
+            facebook_active INTEGER DEFAULT 0,
+            facebook_followers INTEGER,
+            facebook_last_post TEXT,
+            instagram_url TEXT,
+            instagram_active INTEGER DEFAULT 0,
+            instagram_followers INTEGER,
+            instagram_last_post TEXT,
+            outreach_status TEXT DEFAULT 'new',
+            postcard_sent_date TEXT,
+            email_sent_date TEXT,
+            called_date TEXT,
+            converted_date TEXT,
+            preview_url TEXT,
+            preview_html TEXT,
+            qr_code_path TEXT,
+            lob_postcard_id TEXT,
+            lob_tracking_url TEXT,
+            qr_scanned INTEGER DEFAULT 0,
+            qr_scan_date TEXT,
+            form_submitted_date TEXT,
+            opt_in_status TEXT DEFAULT 'no_selection',
+            notes TEXT,
+            source TEXT DEFAULT 'manual',
+            created_at TEXT DEFAULT (datetime('now')),
+            updated_at TEXT DEFAULT (datetime('now'))
+        );
+        """)
+
         # Add new columns if they don't exist yet (safe migration)
         existing = {row[1] for row in conn.execute("PRAGMA table_info(leads)").fetchall()}
         new_cols = {
@@ -44,54 +88,6 @@ def init_db():
                 conn.execute(f"ALTER TABLE leads ADD COLUMN {col} {coltype}")
 
         conn.executescript("""
-        CREATE TABLE IF NOT EXISTS leads (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            owner_name TEXT,
-            address TEXT,
-            city TEXT,
-            state TEXT,
-            phone TEXT,
-            email TEXT,
-            website TEXT,
-            business_type TEXT,
-            priority TEXT DEFAULT 'Cold',
-            quality_score INTEGER DEFAULT 0,
-
-            facebook_url TEXT,
-            facebook_active INTEGER DEFAULT 0,
-            facebook_followers INTEGER,
-            facebook_last_post TEXT,
-            instagram_url TEXT,
-            instagram_active INTEGER DEFAULT 0,
-            instagram_followers INTEGER,
-            instagram_last_post TEXT,
-
-            outreach_status TEXT DEFAULT 'new',
-            postcard_sent_date TEXT,
-            email_sent_date TEXT,
-            called_date TEXT,
-            converted_date TEXT,
-
-            preview_url TEXT,
-            preview_html TEXT,
-            qr_code_path TEXT,
-
-            lob_postcard_id TEXT,
-            lob_tracking_url TEXT,
-
-            qr_scanned INTEGER DEFAULT 0,
-            qr_scan_date TEXT,
-            form_submitted_date TEXT,
-
-            opt_in_status TEXT DEFAULT 'no_selection',
-
-            notes TEXT,
-            source TEXT DEFAULT 'manual',
-            created_at TEXT DEFAULT (datetime('now')),
-            updated_at TEXT DEFAULT (datetime('now'))
-        );
-
         CREATE TABLE IF NOT EXISTS scrape_jobs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             cities TEXT,
