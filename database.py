@@ -82,6 +82,9 @@ def init_db():
 
             qr_scanned INTEGER DEFAULT 0,
             qr_scan_date TEXT,
+            form_submitted_date TEXT,
+
+            opt_in_status TEXT DEFAULT 'no_selection',
 
             notes TEXT,
             source TEXT DEFAULT 'manual',
@@ -453,7 +456,8 @@ def get_call_queue():
     with get_db() as conn:
         rows = conn.execute("""
             SELECT * FROM leads
-            WHERE outreach_status IN ('email_sent') OR qr_scanned=1
+            WHERE (outreach_status IN ('email_sent', 'call_ready') OR qr_scanned=1)
+              AND (opt_in_status IS NULL OR opt_in_status != 'opted_out')
             ORDER BY qr_scanned DESC, quality_score DESC, email_sent_date ASC
         """).fetchall()
     return [dict(r) for r in rows]

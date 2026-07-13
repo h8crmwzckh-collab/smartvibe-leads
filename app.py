@@ -825,17 +825,29 @@ def api_inbound_lead():
 
     submitted_at = datetime.now().isoformat()
 
+    # Map opt_in boolean from Replit to a stored status string
+    raw_opt = data.get("opt_in")
+    if raw_opt is True:
+        opt_status = "opted_in"
+    elif raw_opt is False:
+        opt_status = "opted_out"
+    else:
+        opt_status = "no_selection"
+
     if lead_ref:
-        # Form came from a QR scan — update the existing lead
+        # Form came from a QR scan — update the existing lead and move straight to call queue
         try:
             lead_id = int(lead_ref)
             update_lead(lead_id,
-                        follow_up_stage="form_submitted",
+                        follow_up_stage="call_ready",
                         form_submitted_date=submitted_at,
                         qr_scanned=1,
-                        qr_scan_date=submitted_at)
+                        qr_scan_date=submitted_at,
+                        outreach_status="call_ready",
+                        opt_in_status=opt_status)
+            label = {"opted_in": "opted IN ✅", "opted_out": "opted OUT ❌", "no_selection": "no selection"}.get(opt_status, "")
             add_notification(lead_id,
-                             f"{name} filled out the landing page form — ready to call!",
+                             f"{name} filled out the preview site form ({label}) — call them now!",
                              "hot")
         except (ValueError, TypeError):
             pass
@@ -845,14 +857,14 @@ def api_inbound_lead():
             conn.execute(
                 """INSERT INTO leads
                    (name, phone, city, business_type, source,
-                    follow_up_stage, form_submitted_date, outreach_status)
-                   VALUES (?,?,?,?,?,?,?,?)""",
+                    follow_up_stage, form_submitted_date, outreach_status, opt_in_status)
+                   VALUES (?,?,?,?,?,?,?,?,?)""",
                 (business or name, phone, city, trade,
-                 "landing_page", "form_submitted", submitted_at, "contacted")
+                 "landing_page", "call_ready", submitted_at, "call_ready", opt_status)
             )
             lead_id = conn.execute("SELECT last_insert_rowid()").fetchone()[0]
         add_notification(lead_id,
-                         f"New inbound lead from landing page: {name} ({business})",
+                         f"New inbound lead from preview site: {name} ({business})",
                          "hot")
 
     email = data.get("email", "").strip()
