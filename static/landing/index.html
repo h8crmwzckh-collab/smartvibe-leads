@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SmartVibe Social — AI Solutions for the Trades</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --purple:  #2d1b69;
+  --purple2: #120a2e;
+  --purple3: #1e1047;
+  --gold:    #f5c518;
+  --gold2:   #e6b000;
+  --white:   #ffffff;
+  --gray:    #8b8ba8;
+  --light:   #c8c8e0;
+  --card:    rgba(255,255,255,0.04);
+  --border:  rgba(255,255,255,0.07);
+}
+html { scroll-behavior: smooth; }
+body { font-family: 'Inter', sans-serif; background: var(--purple2); color: var(--white); line-height: 1.6; overflow-x: hidden; }
+
+/* ── NAV ── */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 48px; height: 68px;
+  background: rgba(18,10,46,0.9);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+}
+.nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.nav-logo img { height: 36px; width: 36px; object-fit: contain; }
+.nav-logo-text { font-size: 1rem; font-weight: 800; letter-spacing: -0.02em; }
+.nav-logo-text em { color: var(--gold); font-style: normal; }
+.nav-links { display: flex; align-items: center; gap: 36px; }
+.nav-links a { color: var(--gray); text-decoration: none; font-size: 0.88rem; font-weight: 500; transition: color .2s; }
+.nav-links a:hover { color: var(--white); }
+.btn-gold { background: var(--gold); color: #120a2e; padding: 9px 22px; border-radius: 50px; font-weight: 800; font-size: 0.88rem; text-decoration: none; border: none; cursor: pointer; transition: background .2s, transform .15s; display: inline-block; letter-spacing: -0.01em; }
+.btn-gold:hover { background: var(--gold2); transform: translateY(-1px); }
+.btn-ghost { background: transparent; color: var(--white); padding: 9px 22px; border-radius: 50px; font-weight: 700; font-size: 0.88rem; text-decoration: none; border: 1.5px solid rgba(255,255,255,0.2); cursor: pointer; transition: border-color .2s, color .2s; display: inline-block; }
+.btn-ghost:hover { border-color: var(--gold); color: var(--gold); }
+
+/* ── HERO ── */
+.hero {
+  min-height: 94vh; display: flex; align-items: center;
+  position: relative; overflow: hidden; padding: 80px 48px;
+}
+.hero-glow {
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 80% 60% at 60% 40%, rgba(110,60,220,0.25) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 40% at 15% 70%, rgba(245,197,24,0.07) 0%, transparent 60%);
+}
+.hero-dots {
+  position: absolute; inset: 0; opacity: 0.025;
+  background-image: radial-gradient(circle, var(--white) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+.hero-inner {
+  position: relative; max-width: 1140px; margin: 0 auto; width: 100%;
+  display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 80px; align-items: center;
+}
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(245,197,24,0.1); border: 1px solid rgba(245,197,24,0.25);
+  color: var(--gold); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; padding: 6px 14px; border-radius: 50px; margin-bottom: 28px;
+}
+.hero h1 {
+  font-size: clamp(2.6rem, 4.5vw, 3.8rem);
+  font-weight: 900; line-height: 1.08; letter-spacing: -0.03em; margin-bottom: 22px;
+}
+.hero h1 em { color: var(--gold); font-style: normal; }
+.hero-sub {
+  font-size: 1.1rem; color: var(--light); line-height: 1.75;
+  margin-bottom: 38px; max-width: 500px;
+}
+.hero-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 52px; }
+.hero-divider { height: 1px; background: var(--border); margin-bottom: 32px; }
+.hero-proof { display: flex; gap: 40px; }
+.proof-item-num { font-size: 1.9rem; font-weight: 900; color: var(--gold); line-height: 1; }
+.proof-item-label { font-size: 0.78rem; color: var(--gray); margin-top: 4px; line-height: 1.4; }
+
+/* Hero right — dashboard mockup */
+.hero-visual { position: relative; }
+.dash-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px; padding: 24px 28px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
+}
+.dash-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.dash-title { font-size: 0.78rem; font-weight: 700; color: var(--gray); text-transform: uppercase; letter-spacing: 0.08em; }
+.dash-badge { font-size: 0.7rem; font-weight: 700; background: rgba(16,185,129,0.15); color: #34d399; padding: 3px 10px; border-radius: 50px; border: 1px solid rgba(16,185,129,0.2); }
+.dash-metric { font-size: 2.4rem; font-weight: 900; margin-bottom: 4px; }
+.dash-metric span { font-size: 1rem; color: #34d399; font-weight: 700; }
+.dash-sub { font-size: 0.82rem; color: var(--gray); margin-bottom: 20px; }
+.dash-bars { display: flex; gap: 5px; align-items: flex-end; height: 52px; margin-bottom: 20px; }
+.db { flex: 1; border-radius: 3px 3px 0 0; background: linear-gradient(to top, rgba(245,197,24,0.9), rgba(245,197,24,0.2)); }
+.dash-row { display: flex; items-center: center; justify-content: space-between; padding: 10px 0; border-top: 1px solid var(--border); font-size: 0.82rem; }
+.dash-row-label { color: var(--gray); display: flex; align-items: center; gap: 8px; }
+.dash-row-label::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--gold); display: inline-block; flex-shrink: 0; }
+.dash-row-val { font-weight: 700; color: var(--white); }
+/* floating chips */
+.chip {
+  position: absolute;
+  background: rgba(18,10,46,0.95); border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 14px; padding: 12px 16px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  display: flex; align-items: center; gap: 10px;
+  min-width: 200px;
+}
+.chip-1 { top: -20px; right: -30px; }
+.chip-2 { bottom: -18px; left: -24px; }
+.chip-icon { font-size: 1.3rem; flex-shrink: 0; }
+.chip-text { font-size: 0.78rem; font-weight: 600; line-height: 1.4; }
+.chip-text small { color: var(--gold); display: block; font-weight: 700; }
+
+/* ── SECTION BASE ── */
+section { padding: 110px 48px; }
+.inner { max-width: 1140px; margin: 0 auto; }
+.eyebrow { display: inline-block; color: var(--gold); font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 14px; }
+.section-h { font-size: clamp(1.9rem, 3vw, 2.8rem); font-weight: 900; line-height: 1.1; letter-spacing: -0.025em; margin-bottom: 18px; }
+.section-h em { color: var(--gold); font-style: normal; }
+.section-p { color: var(--light); font-size: 1.05rem; line-height: 1.75; max-width: 580px; }
+
+/* ── WHAT WE ARE ── */
+.what { background: var(--purple3); }
+.what-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; margin-top: 64px; }
+.what-text p { color: var(--light); font-size: 1.05rem; line-height: 1.8; margin-bottom: 20px; }
+.what-text p strong { color: var(--white); }
+.what-pills { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
+.pill { background: rgba(245,197,24,0.1); border: 1px solid rgba(245,197,24,0.2); color: var(--gold); font-size: 0.8rem; font-weight: 700; padding: 6px 14px; border-radius: 50px; }
+.what-cards { display: flex; flex-direction: column; gap: 14px; }
+.what-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 16px; padding: 20px 22px;
+  display: flex; align-items: flex-start; gap: 16px;
+  transition: border-color .2s, transform .2s;
+}
+.what-card:hover { border-color: rgba(245,197,24,0.2); transform: translateX(4px); }
+.what-card-icon { font-size: 1.5rem; flex-shrink: 0; margin-top: 2px; }
+.what-card h4 { font-size: 0.95rem; font-weight: 800; margin-bottom: 4px; }
+.what-card p { font-size: 0.83rem; color: var(--gray); line-height: 1.55; }
+
+/* ── AI SOLUTIONS ── */
+.solutions-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 60px; }
+.sol {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 20px; padding: 28px 24px;
+  position: relative; overflow: hidden;
+  transition: transform .2s, border-color .2s, box-shadow .2s;
+}
+.sol::after {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(circle at top left, rgba(245,197,24,0.05) 0%, transparent 60%);
+  pointer-events: none;
+}
+.sol:hover { transform: translateY(-5px); border-color: rgba(245,197,24,0.2); box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
+.sol.hero-sol { border-color: rgba(245,197,24,0.35); background: linear-gradient(145deg, rgba(90,50,180,0.25), rgba(245,197,24,0.04)); }
+.sol-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; }
+.sol-icon { font-size: 2rem; }
+.sol-tag { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; background: var(--gold); color: #120a2e; padding: 3px 9px; border-radius: 4px; }
+.sol h3 { font-size: 1.05rem; font-weight: 800; margin-bottom: 10px; letter-spacing: -0.01em; }
+.sol p { font-size: 0.85rem; color: var(--gray); line-height: 1.65; margin-bottom: 18px; }
+.sol-list { display: flex; flex-direction: column; gap: 7px; }
+.sol-list li { font-size: 0.8rem; color: var(--light); list-style: none; display: flex; align-items: center; gap: 8px; }
+.sol-list li::before { content: '✓'; color: var(--gold); font-weight: 800; font-size: 0.75rem; flex-shrink: 0; }
+
+/* ── HOW IT WORKS ── */
+.how { background: var(--purple3); }
+.steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; margin-top: 64px; position: relative; }
+.steps::before {
+  content: ''; position: absolute;
+  top: 24px; left: 12%; right: 12%; height: 1px;
+  background: linear-gradient(90deg, var(--gold) 0%, rgba(245,197,24,0.15) 100%);
+}
+.step { text-align: center; padding: 0 16px; }
+.step-circle {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--purple), #5a2eb4);
+  border: 2px solid var(--gold);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 900; font-size: 1rem; color: var(--gold);
+  margin: 0 auto 20px;
+  position: relative; z-index: 1;
+  box-shadow: 0 0 0 5px var(--purple3), 0 0 20px rgba(245,197,24,0.2);
+}
+.step h3 { font-size: 0.95rem; font-weight: 800; margin-bottom: 8px; }
+.step p { font-size: 0.82rem; color: var(--gray); line-height: 1.6; }
+
+/* ── PROOF ── */
+.proof-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 60px; }
+.proof-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 18px; padding: 26px;
+}
+.stars { color: var(--gold); font-size: 0.85rem; margin-bottom: 14px; letter-spacing: 2px; }
+.proof-card blockquote { font-size: 0.9rem; color: var(--light); line-height: 1.7; font-style: italic; margin-bottom: 18px; }
+.proof-author { display: flex; align-items: center; gap: 12px; }
+.avatar { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, var(--purple), var(--gold)); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.8rem; flex-shrink: 0; }
+.author-name { font-size: 0.85rem; font-weight: 800; }
+.author-biz { font-size: 0.75rem; color: var(--gray); margin-top: 1px; }
+
+/* ── CTA / FORM ── */
+.cta-wrap {
+  background: linear-gradient(135deg, rgba(90,50,180,0.35) 0%, rgba(245,197,24,0.06) 100%);
+  border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  padding: 110px 48px; text-align: center;
+}
+.cta-wrap h2 { font-size: clamp(2rem, 4vw, 3rem); font-weight: 900; letter-spacing: -0.025em; margin-bottom: 16px; }
+.cta-wrap h2 em { color: var(--gold); font-style: normal; }
+.cta-wrap > div > p { color: var(--light); font-size: 1.05rem; margin-bottom: 44px; }
+.form-box { max-width: 520px; margin: 0 auto; }
+.fg { display: flex; flex-direction: column; gap: 12px; }
+.fr { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+input, textarea, select {
+  background: rgba(255,255,255,0.06); border: 1px solid var(--border);
+  color: var(--white); padding: 14px 18px; border-radius: 12px;
+  font-size: 0.92rem; font-family: 'Inter', sans-serif;
+  outline: none; transition: border-color .2s; width: 100%;
+}
+input::placeholder, textarea::placeholder { color: var(--gray); }
+input:focus, textarea:focus, select:focus { border-color: rgba(245,197,24,0.5); background: rgba(255,255,255,0.08); }
+select option { background: #1e1047; color: var(--white); }
+textarea { resize: none; }
+.submit-btn {
+  background: var(--gold); color: #120a2e;
+  padding: 16px; border-radius: 12px;
+  font-weight: 900; font-size: 1rem; letter-spacing: -0.01em;
+  border: none; cursor: pointer; width: 100%;
+  transition: background .2s, transform .15s;
+}
+.submit-btn:hover { background: var(--gold2); transform: translateY(-2px); }
+.form-note { font-size: 0.78rem; color: var(--gray); margin-top: 10px; }
+
+/* ── FOOTER ── */
+footer {
+  padding: 48px 48px 32px;
+  border-top: 1px solid var(--border);
+  display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center;
+}
+.footer-logo { display: flex; align-items: center; gap: 10px; }
+.footer-logo img { height: 32px; width: 32px; object-fit: contain; }
+.footer-logo span { font-weight: 800; font-size: 1rem; }
+.footer-logo span em { color: var(--gold); font-style: normal; }
+footer p { color: var(--gray); font-size: 0.82rem; }
+
+/* ── TOAST ── */
+#toast {
+  position: fixed; bottom: 28px; right: 28px;
+  background: #10b981; color: #fff;
+  padding: 14px 22px; border-radius: 12px;
+  font-weight: 700; font-size: 0.92rem;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+  z-index: 999; display: none;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 960px) {
+  nav { padding: 0 20px; }
+  .nav-links { display: none; }
+  section { padding: 70px 20px; }
+  .hero { padding: 60px 20px; min-height: auto; }
+  .hero-inner { grid-template-columns: 1fr; gap: 40px; }
+  .hero-visual { display: none; }
+  .what-grid { grid-template-columns: 1fr; gap: 40px; }
+  .solutions-grid { grid-template-columns: 1fr; }
+  .steps { grid-template-columns: 1fr 1fr; gap: 32px; }
+  .steps::before { display: none; }
+  .proof-grid { grid-template-columns: 1fr; }
+  .fr { grid-template-columns: 1fr; }
+  .cta-wrap { padding: 70px 20px; }
+  footer { padding: 40px 20px 24px; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">
+    <img src="/static/landing/logo.png" alt="SmartVibe Social">
+    <span class="nav-logo-text">SmartVibe <em>Social</em></span>
+  </a>
+  <div class="nav-links">
+    <a href="#what">What We Do</a>
+    <a href="#solutions">AI Solutions</a>
+    <a href="#how">How It Works</a>
+    <a href="#contact" class="btn-gold">Get a Free Assessment</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-dots"></div>
+  <div class="hero-inner">
+    <div>
+      <div class="hero-eyebrow">⚡ AI Operations Team for the Trades</div>
+      <h1>Your business,<br>backed by <em>AI.</em><br>Without the payroll.</h1>
+      <p class="hero-sub">Local trades businesses are losing jobs to competitors who aren't more skilled — they just have better systems. We give you an AI team that answers calls, books jobs, follows up on leads, and builds your reputation. All running in the background while you work.</p>
+      <div class="hero-actions">
+        <a href="#contact" class="btn-gold">Get a Free Assessment</a>
+        <a href="#solutions" class="btn-ghost">See the AI Tools →</a>
+      </div>
+      <div class="hero-divider"></div>
+      <div class="hero-proof">
+        <div>
+          <div class="proof-item-num">3×</div>
+          <div class="proof-item-label">More inbound leads<br>on average</div>
+        </div>
+        <div>
+          <div class="proof-item-num">24/7</div>
+          <div class="proof-item-label">AI handles calls<br>while you're on a job</div>
+        </div>
+        <div>
+          <div class="proof-item-num">48hr</div>
+          <div class="proof-item-label">From zero to fully<br>operational online</div>
+        </div>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div style="position:relative;">
+        <div class="dash-card">
+          <div class="dash-header">
+            <div class="dash-title">Your AI Dashboard</div>
+            <div class="dash-badge">● Live</div>
+          </div>
+          <div class="dash-metric">47 <span>↑ 312%</span></div>
+          <div class="dash-sub">Leads captured this month</div>
+          <div class="dash-bars">
+            <div class="db" style="height:28%"></div>
+            <div class="db" style="height:38%"></div>
+            <div class="db" style="height:33%"></div>
+            <div class="db" style="height:52%"></div>
+            <div class="db" style="height:44%"></div>
+            <div class="db" style="height:68%"></div>
+            <div class="db" style="height:62%"></div>
+            <div class="db" style="height:100%"></div>
+          </div>
+          <div class="dash-row">
+            <div class="dash-row-label">AI Call Bot answered</div>
+            <div class="dash-row-val">23 calls</div>
+          </div>
+          <div class="dash-row">
+            <div class="dash-row-label">Jobs booked by AI</div>
+            <div class="dash-row-val">11 jobs</div>
+          </div>
+          <div class="dash-row">
+            <div class="dash-row-label">Google reviews generated</div>
+            <div class="dash-row-val">18 new</div>
+          </div>
+        </div>
+        <div class="chip chip-1">
+          <div class="chip-icon">🤖</div>
+          <div class="chip-text">AI booked a job<br><small>While you were on a call</small></div>
+        </div>
+        <div class="chip chip-2">
+          <div class="chip-icon">⭐</div>
+          <div class="chip-text">New 5-star review<br><small>Auto-requested after job</small></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT WE ARE -->
+<section class="what" id="what">
+  <div class="inner">
+    <span class="eyebrow">What We Are</span>
+    <h2 class="section-h">Not a marketing agency.<br><em>Your AI operations team.</em></h2>
+    <div class="what-grid">
+      <div class="what-text">
+        <p>Most trades businesses are run by one or two people. You're the owner, the technician, the salesperson, and the receptionist — all at once. <strong>You don't have time to manage a website, post on social media, follow up on leads, and still do the actual work.</strong></p>
+        <p>We plug in an AI-powered system that handles the parts of your business that fall through the cracks when you're busy — so you never miss a lead, always look professional online, and spend more time doing the work you're actually good at.</p>
+        <p>Think of it as hiring a full operations team — minus the salary, benefits, and management headache.</p>
+        <div class="what-pills">
+          <span class="pill">Plumbing</span>
+          <span class="pill">HVAC</span>
+          <span class="pill">Cleaning</span>
+          <span class="pill">Pest Control</span>
+          <span class="pill">Electrical</span>
+          <span class="pill">Landscaping</span>
+          <span class="pill">And more</span>
+        </div>
+      </div>
+      <div class="what-cards">
+        <div class="what-card">
+          <div class="what-card-icon">📵</div>
+          <div>
+            <h4>You miss 40% of your calls</h4>
+            <p>Every missed call while you're on a job is a lead calling your competitor next. Our AI answers, qualifies, and books — even at 10pm.</p>
+          </div>
+        </div>
+        <div class="what-card">
+          <div class="what-card-icon">🔍</div>
+          <div>
+            <h4>You're invisible when people search</h4>
+            <p>If you're not showing up on Google in the first 3 results, you're losing work to less skilled competitors who just invested in their online presence.</p>
+          </div>
+        </div>
+        <div class="what-card">
+          <div class="what-card-icon">💸</div>
+          <div>
+            <h4>Leads slip through the cracks</h4>
+            <p>No system for following up means jobs you quoted never get closed. AI follow-up keeps you top of mind without you lifting a finger.</p>
+          </div>
+        </div>
+        <div class="what-card">
+          <div class="what-card-icon">⭐</div>
+          <div>
+            <h4>Your reviews don't reflect your work</h4>
+            <p>Happy customers rarely leave reviews unprompted. Unhappy ones do. We flip that — automatically requesting reviews from every satisfied job.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AI SOLUTIONS -->
+<section id="solutions">
+  <div class="inner">
+    <span class="eyebrow">The AI Stack</span>
+    <h2 class="section-h">Six AI systems working<br><em>around the clock</em> for your business</h2>
+    <p class="section-p">Every tool we deploy is built around how trades businesses actually operate — not a generic marketing platform repurposed for your industry.</p>
+    <div class="solutions-grid">
+      <div class="sol hero-sol">
+        <div class="sol-top">
+          <div class="sol-icon">🤖</div>
+          <div class="sol-tag">Most Impactful</div>
+        </div>
+        <h3>AI Call & Chat Bot</h3>
+        <p>Your AI receptionist that never sleeps. Answers your phone, qualifies callers, books appointments, and sends you a summary — all while you're under a sink or on a roof.</p>
+        <ul class="sol-list">
+          <li>Answers calls 24/7 in your voice</li>
+          <li>Qualifies leads and books jobs</li>
+          <li>Sends you instant lead summaries</li>
+          <li>Handles after-hours inquiries</li>
+        </ul>
+      </div>
+      <div class="sol">
+        <div class="sol-icon">🌐</div>
+        <h3>Professional Web Presence</h3>
+        <p>A fast, mobile-first site built specifically for your trade — live in 48 hours. Looks like you paid a $5,000 agency. Costs a fraction.</p>
+        <ul class="sol-list">
+          <li>Built for your specific trade</li>
+          <li>Google-optimized from day one</li>
+          <li>Online booking & quote requests</li>
+          <li>Works perfectly on phones</li>
+        </ul>
+      </div>
+      <div class="sol">
+        <div class="sol-icon">⭐</div>
+        <h3>Automated Review Engine</h3>
+        <p>After every completed job, your customers automatically get a review request. More 5-star reviews means higher Google rankings and more trust.</p>
+        <ul class="sol-list">
+          <li>Auto-texted after each job</li>
+          <li>Filters unhappy customers first</li>
+          <li>Climbs Google rankings fast</li>
+          <li>Zero effort from you</li>
+        </ul>
+      </div>
+      <div class="sol">
+        <div class="sol-icon">📱</div>
+        <h3>Social Media on Autopilot</h3>
+        <p>AI creates and posts content for your Facebook and Instagram on a consistent schedule. You stay visible and trusted locally without doing anything.</p>
+        <ul class="sol-list">
+          <li>Posts written by AI, approved by you</li>
+          <li>Consistent presence = more trust</li>
+          <li>Facebook & Instagram covered</li>
+          <li>Relevant to your actual trade</li>
+        </ul>
+      </div>
+      <div class="sol">
+        <div class="sol-icon">🔄</div>
+        <h3>AI Lead Follow-Up</h3>
+        <p>Quoted a job and never heard back? AI follows up automatically at the right time with the right message — turning cold leads warm without you chasing anyone.</p>
+        <ul class="sol-list">
+          <li>Follows up on every open quote</li>
+          <li>Personalised to the job type</li>
+          <li>Escalates hot leads to you</li>
+          <li>Never let a deal go cold</li>
+        </ul>
+      </div>
+      <div class="sol">
+        <div class="sol-icon">📬</div>
+        <h3>Direct Mail + QR Campaigns</h3>
+        <p>Targeted postcards mailed to local businesses in your service area — each with a unique QR code linking to a custom-built preview of what we can do for them.</p>
+        <ul class="sol-list">
+          <li>Hyper-targeted to your area</li>
+          <li>Every postcard is personalised</li>
+          <li>Track scans and responses</li>
+          <li>Stands out from digital noise</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how" id="how">
+  <div class="inner">
+    <span class="eyebrow">How It Works</span>
+    <h2 class="section-h">Fully operational in<br><em>under a week</em></h2>
+    <p class="section-p">No long onboarding. No complicated contracts. We handle the setup so you can stay focused on the actual work.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-circle">1</div>
+        <h3>Free Assessment</h3>
+        <p>We audit your current online presence in 15 minutes and show you exactly where you're losing leads — no pitch, just honest findings.</p>
+      </div>
+      <div class="step">
+        <div class="step-circle">2</div>
+        <h3>We Build the Stack</h3>
+        <p>Our team sets up your AI systems, builds your site, connects your profiles, and gets everything running. You review and approve.</p>
+      </div>
+      <div class="step">
+        <div class="step-circle">3</div>
+        <h3>AI Goes to Work</h3>
+        <p>Your AI team starts answering calls, capturing leads, posting content, and requesting reviews — automatically, in the background.</p>
+      </div>
+      <div class="step">
+        <div class="step-circle">4</div>
+        <h3>You Close More Jobs</h3>
+        <p>Your phone rings more. Leads don't slip away. Your reputation grows. You focus on the work — AI handles everything else.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROOF -->
+<section id="proof">
+  <div class="inner">
+    <span class="eyebrow">Real Results</span>
+    <h2 class="section-h">Trades businesses that<br><em>stopped losing work</em> to weaker competitors</h2>
+    <div class="proof-grid">
+      <div class="proof-card">
+        <div class="stars">★★★★★</div>
+        <blockquote>"The AI call bot paid for itself in the first week. It booked 3 jobs on a Saturday when I had my phone off. I didn't even know until I got the summary."</blockquote>
+        <div class="proof-author">
+          <div class="avatar">JR</div>
+          <div>
+            <div class="author-name">James R.</div>
+            <div class="author-biz">Plumbing & Drain · Colorado Springs</div>
+          </div>
+        </div>
+      </div>
+      <div class="proof-card">
+        <div class="stars">★★★★★</div>
+        <blockquote>"I went from 12 Google reviews to 94 in 90 days without asking a single customer myself. Now I'm the top result when people search cleaning in my area."</blockquote>
+        <div class="proof-author">
+          <div class="avatar">ML</div>
+          <div>
+            <div class="author-name">Maria L.</div>
+            <div class="author-biz">Residential Cleaning · El Paso County</div>
+          </div>
+        </div>
+      </div>
+      <div class="proof-card">
+        <div class="stars">★★★★★</div>
+        <blockquote>"I was losing bids to guys I know aren't as good. Now I have a professional site, active social, and the AI follows up on every quote I send. Closed rate is up 40%."</blockquote>
+        <div class="proof-author">
+          <div class="avatar">DK</div>
+          <div>
+            <div class="author-name">Derek K.</div>
+            <div class="author-biz">Pest Control · Colorado Springs</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<div class="cta-wrap" id="contact">
+  <div class="inner">
+    <h2>Let's see what AI can do<br><em>for your business.</em></h2>
+    <p>Fill this out and we'll reach back out within one business day with a free look at your current online presence — where you're losing leads and what we'd fix first.</p>
+    <div class="form-box">
+      <form class="fg" onsubmit="handleSubmit(event)">
+        <div class="fr">
+          <input type="text" placeholder="Your Name" required>
+          <input type="tel" placeholder="Phone Number" required>
+        </div>
+        <input type="text" placeholder="Business Name" required>
+        <select>
+          <option value="" disabled selected>Type of Business</option>
+          <option>Plumbing</option>
+          <option>HVAC / Heating & Cooling</option>
+          <option>Cleaning / Maid Service</option>
+          <option>Pest Control</option>
+          <option>Electrical</option>
+          <option>Landscaping / Lawn Care</option>
+          <option>General Contractor</option>
+          <option>Other Trade</option>
+        </select>
+        <input type="text" placeholder="City / Service Area">
+        <textarea rows="3" placeholder="Biggest challenge right now? (optional)"></textarea>
+        <button type="submit" class="submit-btn">Get My Free Assessment →</button>
+        <p class="form-note">No spam. No pressure. Just an honest conversation about what AI can do for your business.</p>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">
+    <img src="/static/landing/logo.png" alt="SmartVibe Social">
+    <span>SmartVibe <em>Social</em></span>
+  </div>
+  <p>AI-powered operations for local trades businesses · Colorado Springs, CO</p>
+  <p style="font-size:0.75rem;opacity:0.35;margin-top:4px;">© 2025 SmartVibe Social. All rights reserved.</p>
+</footer>
+
+<div id="toast">✅ Got it! We'll reach out within 1 business day.</div>
+
+<script>
+function handleSubmit(e) {
+  e.preventDefault();
+  const t = document.getElementById('toast');
+  t.style.display = 'block';
+  e.target.reset();
+  setTimeout(() => t.style.display = 'none', 5000);
+}
+</script>
+</body>
+</html>

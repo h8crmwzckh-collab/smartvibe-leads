@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+{% block title %}Scraper — SmartVibe{% endblock %}
+
+{% block topbar_left %}
+<h1 class="text-sm font-semibold text-white">Lead Scraper</h1>
+{% endblock %}
+
+{% block content %}
+<div class="px-8 py-6 max-w-5xl mx-auto space-y-6">
+
+  <!-- Scrape form -->
+  <div class="card rounded-xl p-6">
+    <div class="flex items-center gap-3 mb-6">
+      <div class="w-9 h-9 rounded-xl bg-brand-500/15 flex items-center justify-center">
+        <svg class="w-5 h-5 text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      </div>
+      <div>
+        <h2 class="text-sm font-semibold text-white">Google Maps Scraper</h2>
+        <p class="text-xs text-slate-500">Finds businesses + auto-checks Facebook & Instagram</p>
+      </div>
+    </div>
+
+    <form action="/scraper/start" method="POST" class="space-y-5" id="scrape-form">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1.5">
+            Cities
+            <span class="text-slate-600 font-normal ml-1">comma-separated</span>
+          </label>
+          <input type="text" name="cities" required
+            placeholder="Colorado Springs, Pueblo, Denver"
+            class="input-field"
+            value="Colorado Springs, Pueblo" />
+          <p class="text-xs text-slate-600 mt-1.5">Example: Colorado Springs, Pueblo, Denver</p>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1.5">Business Type</label>
+          <input type="text" name="business_type" required
+            placeholder="plumber, house cleaning, electrician…"
+            class="input-field" />
+          <p class="text-xs text-slate-600 mt-1.5">One type per scrape job</p>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-medium text-slate-400 mb-1.5">
+          Leads to Find
+          <span id="count-display" class="text-brand-400 ml-1">20</span>
+        </label>
+        <input type="range" name="lead_count" id="lead-range" min="5" max="100" step="5" value="20"
+          class="w-full accent-indigo-500 cursor-pointer"
+          oninput="document.getElementById('count-display').textContent=this.value" />
+        <div class="flex justify-between text-xs text-slate-600 mt-1">
+          <span>5</span><span>50</span><span>100</span>
+        </div>
+      </div>
+
+      <!-- What happens -->
+      <div class="rounded-xl bg-white/3 border border-white/10 p-4">
+        <p class="text-xs font-semibold text-slate-400 mb-3">What the scraper does:</p>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {% for icon, title, desc in [
+            ('🗺️', 'Google Maps', 'Name, address, phone, website'),
+            ('📘', 'Facebook Check', 'Finds page, followers, last post'),
+            ('📸', 'Instagram Check', 'Finds profile, activity status'),
+          ] %}
+          <div class="flex items-start gap-2">
+            <span class="text-lg flex-shrink-0 mt-0.5">{{ icon }}</span>
+            <div>
+              <div class="text-xs font-semibold text-white">{{ title }}</div>
+              <div class="text-xs text-slate-500">{{ desc }}</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button type="submit" class="btn-primary" id="start-btn">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Start Scraping
+        </button>
+        <p class="text-xs text-slate-600">Runs in background. Check the table below for progress.</p>
+      </div>
+    </form>
+  </div>
+
+  <!-- Preset buttons -->
+  <div class="card rounded-xl p-5">
+    <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Quick Presets</h3>
+    <div class="flex flex-wrap gap-2">
+      {% for preset in [
+        ('Plumbers', 'plumber'),
+        ('House Cleaning', 'house cleaning'),
+        ('Electricians', 'electrician'),
+        ('Landscaping', 'landscaping'),
+        ('Roofers', 'roofing'),
+        ('HVAC', 'hvac'),
+        ('Auto Repair', 'auto repair'),
+        ('Painters', 'painter'),
+      ] %}
+      <button onclick="setType('{{ preset[1] }}')"
+        class="px-3 py-1.5 text-xs font-medium rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-colors border border-white/10">
+        {{ preset[0] }}
+      </button>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Jobs history -->
+  {% if jobs %}
+  <div class="card rounded-xl overflow-hidden">
+    <div class="px-5 py-4 border-b border-white/5">
+      <h3 class="text-sm font-semibold text-white">Recent Jobs</h3>
+    </div>
+    <div class="divide-y divide-white/5">
+      {% for job in jobs %}
+      <div class="px-5 py-4 flex items-center justify-between" id="job-{{ job.id }}">
+        <div class="flex items-center gap-4 min-w-0">
+          <!-- Status indicator -->
+          <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0
+            {% if job.status == 'done' %}bg-green-500/15
+            {% elif job.status == 'running' %}bg-brand-500/15
+            {% elif job.status == 'error' %}bg-red-500/15
+            {% else %}bg-slate-500/15{% endif %}">
+            {% if job.status == 'done' %}
+            <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+            {% elif job.status == 'running' %}
+            <svg class="w-4 h-4 text-brand-400 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+            {% elif job.status == 'error' %}
+            <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            {% else %}
+            <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/></svg>
+            {% endif %}
+          </div>
+          <div class="min-w-0">
+            <div class="text-sm font-medium text-white">
+              {{ job.business_type | title }} in
+              {% if job.cities %}{{ job.cities | replace('[','') | replace(']','') | replace('"','') }}{% endif %}
+            </div>
+            <div class="text-xs text-slate-500 mt-0.5">
+              Target: {{ job.lead_count }} leads ·
+              <span class="job-found-{{ job.id }}">{{ job.leads_found }} found</span> ·
+              {{ job.created_at | timeago }}
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 flex-shrink-0">
+          <span class="text-xs px-2 py-1 rounded-md font-medium
+            {% if job.status == 'done' %}bg-green-500/15 text-green-400
+            {% elif job.status == 'running' %}bg-brand-500/15 text-brand-400
+            {% elif job.status == 'error' %}bg-red-500/15 text-red-400
+            {% else %}bg-slate-500/15 text-slate-400{% endif %}">
+            {{ job.status | capitalize }}
+          </span>
+          {% if job.status == 'done' and job.leads_found > 0 %}
+          <a href="/leads?sort=recent" class="btn-ghost text-xs py-1.5">View Leads</a>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Info note -->
+  <div class="flex items-start gap-3 px-4 py-3 rounded-xl bg-amber-500/5 border border-amber-500/15 text-amber-400/80 text-xs">
+    <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    <span>Playwright must be installed for scraping: <code class="bg-black/30 px-1 rounded">pip install playwright && playwright install chromium</code></span>
+  </div>
+
+</div>
+
+<script>
+function setType(type) {
+  document.querySelector('[name="business_type"]').value = type;
+}
+
+document.getElementById('scrape-form').addEventListener('submit', () => {
+  const btn = document.getElementById('start-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg> Starting…';
+});
+
+// Poll running jobs
+{% for job in jobs %}{% if job.status == 'running' %}
+(function pollJob(id) {
+  const interval = setInterval(async () => {
+    const r = await fetch(`/scraper/status/${id}`);
+    const j = await r.json();
+    const foundEl = document.querySelector(`.job-found-${id}`);
+    if (foundEl) foundEl.textContent = j.leads_found + ' found';
+    if (j.status !== 'running') {
+      clearInterval(interval);
+      setTimeout(() => location.reload(), 1000);
+    }
+  }, 3000);
+})({{ job.id }});
+{% endif %}{% endfor %}
+</script>
+{% endblock %}

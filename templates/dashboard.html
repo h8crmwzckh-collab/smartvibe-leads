@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — SmartVibe Leads{% endblock %}
+
+{% block topbar_left %}
+<h1 class="text-sm font-semibold text-white">Dashboard</h1>
+{% endblock %}
+
+{% block content %}
+<div class="px-8 py-8 max-w-7xl mx-auto space-y-8">
+
+  {% if imported %}
+  <div class="flex items-center gap-3 px-4 py-3 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400 text-sm">
+    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    Imported <strong>{{ imported }}</strong> leads from your CSV file.
+  </div>
+  {% endif %}
+
+  <!-- Stats grid -->
+  <div>
+    <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4">Overview</h2>
+    <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
+
+      <div class="stat-card rounded-xl col-span-1">
+        <div class="text-xs text-slate-500 mb-1">Total Leads</div>
+        <div class="text-3xl font-bold text-white">{{ stats.total }}</div>
+        <div class="text-xs text-slate-600 mt-1">in database</div>
+      </div>
+
+      <div class="stat-card rounded-xl col-span-1">
+        <div class="text-xs text-slate-500 mb-1">Hot Leads</div>
+        <div class="text-3xl font-bold text-red-400">{{ stats.hot }}</div>
+        <div class="text-xs text-slate-600 mt-1">score 70+</div>
+      </div>
+
+      <div class="stat-card rounded-xl col-span-1">
+        <div class="text-xs text-slate-500 mb-1">Warm Leads</div>
+        <div class="text-3xl font-bold text-amber-400">{{ stats.warm }}</div>
+        <div class="text-xs text-slate-600 mt-1">score 40–69</div>
+      </div>
+
+      <div class="stat-card rounded-xl col-span-1">
+        <div class="text-xs text-slate-500 mb-1">Emails Found</div>
+        <div class="text-3xl font-bold text-brand-400">{{ stats.emails }}</div>
+        <div class="text-xs text-slate-600 mt-1">ready to send</div>
+      </div>
+
+      <div class="stat-card rounded-xl col-span-1">
+        <div class="text-xs text-slate-500 mb-1">Owners Found</div>
+        <div class="text-3xl font-bold text-purple-400">{{ stats.owners }}</div>
+        <div class="text-xs text-slate-600 mt-1">named contacts</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Pipeline stats -->
+  <div>
+    <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4">Outreach Pipeline</h2>
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+
+      <div class="stat-card rounded-xl">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs text-slate-500">Postcards Mailed</span>
+          <div class="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
+            <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          </div>
+        </div>
+        <div class="text-2xl font-bold text-white">{{ stats.postcard_sent }}</div>
+        <div class="text-xs text-slate-600 mt-1">via Lob</div>
+      </div>
+
+      <div class="stat-card rounded-xl">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs text-slate-500">QR Scans</span>
+          <div class="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center">
+            <span class="text-red-400 text-sm">🔥</span>
+          </div>
+        </div>
+        <div class="text-2xl font-bold text-red-400">{{ stats.qr_scans }}</div>
+        <div class="text-xs text-slate-600 mt-1">interested leads</div>
+      </div>
+
+      <div class="stat-card rounded-xl">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs text-slate-500">Call Queue</span>
+          <div class="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center">
+            <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+          </div>
+        </div>
+        <div class="text-2xl font-bold text-green-400">{{ stats.call_ready }}</div>
+        <div class="text-xs text-slate-600 mt-1">ready to call</div>
+      </div>
+
+      <div class="stat-card rounded-xl">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs text-slate-500">Conversion Rate</span>
+          <div class="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center">
+            <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+          </div>
+        </div>
+        <div class="text-2xl font-bold text-purple-400">{{ stats.conversion_rate }}%</div>
+        <div class="text-xs text-slate-600 mt-1">of {{ stats.converted }} converted</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Two columns: hot leads + recent -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+    <!-- Hot Leads -->
+    <div class="card rounded-xl overflow-hidden">
+      <div class="px-5 py-4 border-b border-white/5 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-red-500 pulse-dot"></span>
+          <span class="text-sm font-semibold text-white">Hot Leads</span>
+        </div>
+        <a href="/leads?priority=Hot" class="text-xs text-brand-400 hover:underline">View all →</a>
+      </div>
+      <div class="divide-y divide-white/5">
+        {% for lead in hot_leads %}
+        <a href="/leads/{{ lead.id }}" class="flex items-center justify-between px-5 py-3.5 hover:bg-white/3 transition-colors group">
+          <div class="min-w-0">
+            <div class="text-sm font-medium text-white truncate group-hover:text-brand-400 transition-colors">{{ lead.name }}</div>
+            <div class="text-xs text-slate-500 mt-0.5">{{ lead.city or '—' }} · {{ lead.business_type or '—' }}</div>
+          </div>
+          <div class="flex items-center gap-2 flex-shrink-0 ml-3">
+            <div class="text-xs font-bold text-red-400">{{ lead.quality_score }}</div>
+            <svg class="w-3 h-3 text-slate-600 group-hover:text-slate-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </div>
+        </a>
+        {% else %}
+        <div class="px-5 py-8 text-center text-sm text-slate-600">No hot leads yet. Start scraping!</div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Recently Added -->
+    <div class="card rounded-xl overflow-hidden">
+      <div class="px-5 py-4 border-b border-white/5 flex items-center justify-between">
+        <span class="text-sm font-semibold text-white">Recently Added</span>
+        <a href="/leads?sort=recent" class="text-xs text-brand-400 hover:underline">View all →</a>
+      </div>
+      <div class="divide-y divide-white/5">
+        {% for lead in recent_leads %}
+        <a href="/leads/{{ lead.id }}" class="flex items-center justify-between px-5 py-3.5 hover:bg-white/3 transition-colors group">
+          <div class="min-w-0">
+            <div class="text-sm font-medium text-white truncate group-hover:text-brand-400 transition-colors">{{ lead.name }}</div>
+            <div class="text-xs text-slate-500 mt-0.5">
+              {% if lead.priority == 'Hot' %}<span class="badge-hot">Hot</span>
+              {% elif lead.priority == 'Warm' %}<span class="badge-warm">Warm</span>
+              {% else %}<span class="badge-cold">Cold</span>{% endif %}
+              <span class="ml-1">{{ lead.created_at | timeago }}</span>
+            </div>
+          </div>
+          <svg class="w-3 h-3 text-slate-600 group-hover:text-slate-400 transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </a>
+        {% else %}
+        <div class="px-5 py-8 text-center text-sm text-slate-600">No leads yet. Import a CSV or start scraping.</div>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Pipeline progress bar -->
+  <div class="card rounded-xl p-6">
+    <h2 class="text-sm font-semibold text-white mb-5">Outreach Funnel</h2>
+    {% set total = stats.total or 1 %}
+    <div class="space-y-3">
+      {% set stages = [
+        ('Total Leads', stats.total, '#6366f1'),
+        ('Postcard Sent', stats.postcard_sent, '#3b82f6'),
+        ('QR Scanned', stats.qr_scans, '#ef4444'),
+        ('Converted', stats.converted, '#10b981'),
+      ] %}
+      {% for label, count, color in stages %}
+      <div class="flex items-center gap-4">
+        <div class="w-32 text-xs text-slate-400 text-right flex-shrink-0">{{ label }}</div>
+        <div class="flex-1 h-5 rounded-full bg-white/5 overflow-hidden">
+          <div class="h-full rounded-full transition-all duration-700"
+               style="width: {{ [(count / total * 100)|round|int, 100]|min }}%; background: {{ color }}; opacity: 0.85"></div>
+        </div>
+        <div class="w-10 text-xs font-semibold text-white text-right flex-shrink-0">{{ count }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Quick actions -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <a href="/scraper" class="card rounded-xl p-5 hover:border-brand-500/40 transition-colors group cursor-pointer block">
+      <div class="w-9 h-9 rounded-lg bg-brand-500/10 flex items-center justify-center mb-3 group-hover:bg-brand-500/20 transition-colors">
+        <svg class="w-5 h-5 text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      </div>
+      <div class="text-sm font-semibold text-white">Scrape New Leads</div>
+      <div class="text-xs text-slate-500 mt-1">Google Maps + social check</div>
+    </a>
+    <a href="/call-queue" class="card rounded-xl p-5 hover:border-green-500/40 transition-colors group cursor-pointer block">
+      <div class="w-9 h-9 rounded-lg bg-green-500/10 flex items-center justify-center mb-3 group-hover:bg-green-500/20 transition-colors">
+        <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+      </div>
+      <div class="text-sm font-semibold text-white">Call Queue</div>
+      <div class="text-xs text-slate-500 mt-1">{{ stats.call_ready }} leads ready to call</div>
+    </a>
+    <a href="/leads/new" class="card rounded-xl p-5 hover:border-purple-500/40 transition-colors group cursor-pointer block">
+      <div class="w-9 h-9 rounded-lg bg-purple-500/10 flex items-center justify-center mb-3 group-hover:bg-purple-500/20 transition-colors">
+        <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+      </div>
+      <div class="text-sm font-semibold text-white">Add Lead Manually</div>
+      <div class="text-xs text-slate-500 mt-1">Enter details by hand</div>
+    </a>
+  </div>
+
+</div>
+{% endblock %}

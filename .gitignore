@@ -1,0 +1,10 @@
+.env
+*.db
+*.db-shm
+*.db-wal
+app.log
+__pycache__/
+*.pyc
+.DS_Store
+static/qrcodes/
+static/previews/

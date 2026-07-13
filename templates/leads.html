@@ -1,0 +1,380 @@
+{% extends "base.html" %}
+{% block title %}Leads — SmartVibe{% endblock %}
+
+{% block topbar_left %}
+<h1 class="text-sm font-semibold text-white">Leads</h1>
+<span class="text-slate-600 text-sm">/</span>
+<span class="text-sm text-slate-400">{{ total }} results</span>
+{% endblock %}
+
+{% block content %}
+<div class="px-8 py-6">
+
+  <!-- Bulk check banner -->
+  <div id="check-banner" class="hidden mb-5 card rounded-xl px-5 py-4 border-brand-500/30">
+    <div class="flex items-center justify-between gap-4">
+      <div class="flex items-center gap-3 min-w-0">
+        <div id="check-spinner" class="w-5 h-5 flex-shrink-0">
+          <svg class="animate-spin text-brand-400 w-5 h-5" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+          </svg>
+        </div>
+        <div class="min-w-0">
+          <div class="text-sm font-medium text-white">Checking digital presence for all leads…</div>
+          <div class="text-xs text-slate-500 mt-0.5">
+            <span id="check-done">0</span> of <span id="check-total">0</span> leads checked
+            <span id="check-errors-wrap" class="hidden"> · <span id="check-errors" class="text-red-400">0</span> errors</span>
+          </div>
+        </div>
+      </div>
+      <div class="flex-shrink-0 w-48">
+        <div class="h-1.5 rounded-full bg-white/10 overflow-hidden">
+          <div id="check-progress-bar" class="h-full rounded-full bg-brand-500 transition-all duration-500" style="width:0%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters bar -->
+  <form method="GET" action="/leads" class="flex flex-wrap items-center gap-2.5 mb-5">
+    <div class="relative flex-1 min-w-48">
+      <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      <input type="text" name="q" value="{{ search }}" placeholder="Search by name, city, owner…" class="input-field pl-9" />
+    </div>
+
+    <select name="priority" class="input-field" style="width:auto">
+      <option value="">All Priorities</option>
+      <option value="Hot" {% if priority=='Hot' %}selected{% endif %}>🔥 Hot</option>
+      <option value="Warm" {% if priority=='Warm' %}selected{% endif %}>🌤 Warm</option>
+      <option value="Cold" {% if priority=='Cold' %}selected{% endif %}>❄️ Cold</option>
+    </select>
+
+    <select name="city" class="input-field" style="width:auto">
+      <option value="">All Cities</option>
+      {% for c in cities %}<option value="{{ c }}" {% if city==c %}selected{% endif %}>{{ c }}</option>{% endfor %}
+    </select>
+
+    <select name="type" class="input-field" style="width:auto">
+      <option value="">All Types</option>
+      {% for t in btypes %}<option value="{{ t }}" {% if btype==t %}selected{% endif %}>{{ t | title }}</option>{% endfor %}
+    </select>
+
+    <select name="status" class="input-field" style="width:auto">
+      <option value="">All Statuses</option>
+      <option value="new" {% if status=='new' %}selected{% endif %}>New</option>
+      <option value="postcard_sent" {% if status=='postcard_sent' %}selected{% endif %}>Postcard Sent</option>
+      <option value="email_sent" {% if status=='email_sent' %}selected{% endif %}>Email Sent</option>
+      <option value="called" {% if status=='called' %}selected{% endif %}>Called</option>
+      <option value="converted" {% if status=='converted' %}selected{% endif %}>Converted</option>
+    </select>
+
+    <select name="sort" class="input-field" style="width:auto">
+      <option value="score" {% if sort=='score' %}selected{% endif %}>Top Score</option>
+      <option value="recent" {% if sort=='recent' %}selected{% endif %}>Most Recent</option>
+      <option value="name" {% if sort=='name' %}selected{% endif %}>Name A–Z</option>
+      <option value="city" {% if sort=='city' %}selected{% endif %}>City</option>
+      <option value="qr" {% if sort=='qr' %}selected{% endif %}>QR Scans First</option>
+    </select>
+
+    <button type="submit" class="btn-primary py-2">Filter</button>
+    {% if search or priority or city or btype or status %}
+    <a href="/leads" class="btn-ghost py-2">Clear</a>
+    {% endif %}
+
+    <!-- Bulk check button -->
+    <button type="button" onclick="startBulkCheck()"
+      class="ml-auto btn-ghost py-2 text-xs" id="bulk-check-btn" title="Check website & social media status for all leads">
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+      Recheck All
+    </button>
+  </form>
+
+  <!-- Lead cards -->
+  <div class="space-y-2">
+    {% for lead in leads %}
+    {% set status = lead.outreach_status or 'new' %}
+    {% set checked = lead.last_checked %}
+
+    <div class="card rounded-xl hover:border-white/20 transition-colors {% if lead.qr_scanned %}border-red-500/25{% endif %}">
+      <div class="flex items-center gap-4 px-5 py-4">
+
+        <!-- Score bubble -->
+        <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 font-bold text-base
+          {% if lead.quality_score >= 75 %}bg-red-500/15 text-red-400 border border-red-500/20
+          {% elif lead.quality_score >= 45 %}bg-amber-500/15 text-amber-400 border border-amber-500/20
+          {% else %}bg-slate-500/15 text-slate-400 border border-slate-500/20{% endif %}">
+          {{ lead.quality_score }}
+        </div>
+
+        <!-- Name + city + type -->
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <a href="/leads/{{ lead.id }}" class="text-sm font-semibold text-white hover:text-brand-400 transition-colors">
+              {{ lead.name }}
+            </a>
+            {% if lead.qr_scanned %}
+            <span class="badge-hot text-[10px] py-0 animate-pulse">🔥 QR Scanned</span>
+            {% endif %}
+          </div>
+          <div class="flex items-center gap-2 mt-0.5 text-xs text-slate-500 flex-wrap">
+            {% if lead.city %}<span>{{ lead.city }}</span>{% endif %}
+            {% if lead.business_type %}<span class="px-1.5 py-0.5 bg-white/5 rounded text-slate-400">{{ lead.business_type | title }}</span>{% endif %}
+            {% if lead.owner_name %}<span>· {{ lead.owner_name }}</span>{% endif %}
+          </div>
+        </div>
+
+        <!-- Digital health indicators -->
+        <div class="flex items-center gap-1.5 flex-shrink-0">
+          <!-- Website -->
+          {% if not lead.website %}
+            <div class="health-pill bg-slate-800/80 border border-slate-700" title="No website">
+              <span class="text-slate-600">🌐</span>
+              <span class="text-slate-600">None</span>
+            </div>
+          {% elif lead.website_live == 0 %}
+            <div class="health-pill bg-red-500/10 border border-red-500/20" title="Website is down/broken">
+              <span>🌐</span>
+              <span class="text-red-400">Dead</span>
+            </div>
+          {% elif lead.website_grade in ('F', 'D') %}
+            <div class="health-pill bg-orange-500/10 border border-orange-500/20" title="Website live but poor quality">
+              <span>🌐</span>
+              <span class="text-orange-400">Weak</span>
+            </div>
+          {% elif lead.website_grade in ('A', 'B') %}
+            <div class="health-pill bg-green-500/10 border border-green-500/20" title="Good website">
+              <span>🌐</span>
+              <span class="text-green-400">{{ lead.website_grade }}</span>
+            </div>
+          {% elif lead.website_live == 1 %}
+            <div class="health-pill bg-yellow-500/10 border border-yellow-500/20" title="Website live">
+              <span>🌐</span>
+              <span class="text-yellow-400">{{ lead.website_grade or 'C' }}</span>
+            </div>
+          {% else %}
+            <div class="health-pill bg-slate-800/80 border border-slate-700" title="Not checked yet">
+              <span>🌐</span>
+              <span class="text-slate-500">?</span>
+            </div>
+          {% endif %}
+
+          <!-- Facebook -->
+          {% if not lead.facebook_url %}
+            <div class="health-pill bg-slate-800/80 border border-slate-700" title="No Facebook page">
+              <span class="text-slate-600 text-[10px] font-bold">f</span>
+              <span class="text-slate-600">None</span>
+            </div>
+          {% elif lead.facebook_last_post_days and lead.facebook_last_post_days > 180 %}
+            <div class="health-pill bg-red-500/10 border border-red-500/20" title="Facebook dead — last post {{ lead.facebook_last_post_days }} days ago">
+              <span class="text-red-400 text-[10px] font-bold">f</span>
+              <span class="text-red-400">Dead</span>
+            </div>
+          {% elif lead.facebook_last_post_days and lead.facebook_last_post_days > 60 %}
+            <div class="health-pill bg-orange-500/10 border border-orange-500/20" title="Facebook dormant — last post {{ lead.facebook_last_post_days }} days ago">
+              <span class="text-orange-400 text-[10px] font-bold">f</span>
+              <span class="text-orange-400">Dormant</span>
+            </div>
+          {% elif lead.facebook_active %}
+            <div class="health-pill bg-blue-500/10 border border-blue-500/20" title="Facebook active">
+              <span class="text-blue-400 text-[10px] font-bold">f</span>
+              <span class="text-blue-400">Active</span>
+            </div>
+          {% else %}
+            <div class="health-pill bg-slate-800/80 border border-slate-700" title="Facebook not checked">
+              <span class="text-slate-500 text-[10px] font-bold">f</span>
+              <span class="text-slate-500">?</span>
+            </div>
+          {% endif %}
+
+          <!-- Instagram -->
+          {% if not lead.instagram_url %}
+            <div class="health-pill bg-slate-800/80 border border-slate-700" title="No Instagram">
+              <span class="text-slate-600 text-[10px] font-bold">ig</span>
+              <span class="text-slate-600">None</span>
+            </div>
+          {% elif lead.instagram_last_post_days and lead.instagram_last_post_days > 180 %}
+            <div class="health-pill bg-red-500/10 border border-red-500/20" title="Instagram dead — last post {{ lead.instagram_last_post_days }} days ago">
+              <span class="text-red-400 text-[10px] font-bold">ig</span>
+              <span class="text-red-400">Dead</span>
+            </div>
+          {% elif lead.instagram_active %}
+            <div class="health-pill bg-pink-500/10 border border-pink-500/20" title="Instagram active">
+              <span class="text-pink-400 text-[10px] font-bold">ig</span>
+              <span class="text-pink-400">Active</span>
+            </div>
+          {% else %}
+            <div class="health-pill bg-slate-800/80 border border-slate-700" title="Instagram not checked">
+              <span class="text-slate-500 text-[10px] font-bold">ig</span>
+              <span class="text-slate-500">?</span>
+            </div>
+          {% endif %}
+
+          <!-- TikTok -->
+          {% if not lead.tiktok_url %}
+            <div class="health-pill bg-slate-800/80 border border-slate-700" title="No TikTok">
+              <span class="text-slate-600 text-[10px] font-bold">tt</span>
+              <span class="text-slate-600">None</span>
+            </div>
+          {% elif lead.tiktok_last_post_days and lead.tiktok_last_post_days > 180 %}
+            <div class="health-pill bg-red-500/10 border border-red-500/20" title="TikTok dead — last post {{ lead.tiktok_last_post_days }} days ago">
+              <span class="text-red-400 text-[10px] font-bold">tt</span>
+              <span class="text-red-400">Dead</span>
+            </div>
+          {% elif lead.tiktok_active %}
+            <div class="health-pill bg-cyan-500/10 border border-cyan-500/20" title="TikTok active{% if lead.tiktok_followers %} · {{ '{:,}'.format(lead.tiktok_followers) }} followers{% endif %}">
+              <span class="text-cyan-400 text-[10px] font-bold">tt</span>
+              <span class="text-cyan-400">Active</span>
+            </div>
+          {% else %}
+            <div class="health-pill bg-slate-800/80 border border-slate-700" title="TikTok not checked">
+              <span class="text-slate-500 text-[10px] font-bold">tt</span>
+              <span class="text-slate-500">?</span>
+            </div>
+          {% endif %}
+
+          <!-- FB consistency badge (only show when we have data) -->
+          {% if lead.facebook_url and lead.facebook_post_frequency and lead.facebook_post_frequency not in ('Unknown', '') %}
+            {% set freq = lead.facebook_post_frequency %}
+            {% if freq == 'Daily' %}{% set fc = '#4ade80' %}{% set fb = 'rgba(74,222,128,0.1)' %}{% set fb2 = 'rgba(74,222,128,0.2)' %}
+            {% elif '2' in freq %}{% set fc = '#60a5fa' %}{% set fb = 'rgba(96,165,250,0.1)' %}{% set fb2 = 'rgba(96,165,250,0.2)' %}
+            {% elif freq == 'Weekly' %}{% set fc = '#facc15' %}{% set fb = 'rgba(250,204,21,0.1)' %}{% set fb2 = 'rgba(250,204,21,0.2)' %}
+            {% elif freq == 'Monthly' %}{% set fc = '#fb923c' %}{% set fb = 'rgba(251,146,60,0.1)' %}{% set fb2 = 'rgba(251,146,60,0.2)' %}
+            {% else %}{% set fc = '#f87171' %}{% set fb = 'rgba(248,113,113,0.1)' %}{% set fb2 = 'rgba(248,113,113,0.2)' %}{% endif %}
+            <div class="health-pill" style="background:{{ fb }};border-color:{{ fb2 }}"
+                 title="Facebook: {{ freq }}{% if lead.facebook_posts_per_month %} ({{ lead.facebook_posts_per_month }}/mo){% endif %}">
+              <span style="color:{{ fc }}" class="text-[10px]">📅</span>
+              <span style="color:{{ fc }}">{{ freq }}</span>
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Pipeline stage dots -->
+        <div class="flex items-center gap-1 flex-shrink-0 hidden lg:flex">
+          {% for step, label in [('postcard_sent','P'), ('email_sent','E'), ('called','C'), ('converted','✓')] %}
+          {% set done = (
+            (step == 'postcard_sent' and status in ['postcard_sent','email_sent','called','converted']) or
+            (step == 'email_sent' and status in ['email_sent','called','converted']) or
+            (step == 'called' and status in ['called','converted']) or
+            (step == 'converted' and status == 'converted')
+          ) %}
+          <div class="w-5 h-5 rounded-full text-[9px] font-bold flex items-center justify-center
+            {% if done %}bg-brand-500/80 text-white{% else %}bg-white/5 text-slate-600{% endif %}"
+            title="{{ label }}">{{ label }}</div>
+          {% endfor %}
+        </div>
+
+        <!-- Phone + right arrow -->
+        <div class="flex items-center gap-3 flex-shrink-0">
+          {% if lead.phone %}
+          <span class="text-xs text-green-400 hidden xl:block">{{ lead.phone }}</span>
+          {% endif %}
+          <a href="/leads/{{ lead.id }}" class="text-slate-600 hover:text-brand-400 transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+
+      </div>
+
+      <!-- "Last checked" note if applicable -->
+      {% if lead.last_checked %}
+      <div class="px-5 pb-3 -mt-1">
+        <span class="text-[10px] text-slate-700">Checked {{ lead.last_checked | timeago }}</span>
+      </div>
+      {% endif %}
+    </div>
+    {% else %}
+    <div class="card rounded-xl px-5 py-16 text-center text-slate-500">
+      <svg class="w-10 h-10 mx-auto mb-3 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0"/></svg>
+      No leads match your filters. <a href="/leads" class="text-brand-400 hover:underline">Clear filters</a> or <a href="/scraper" class="text-brand-400 hover:underline">scrape new leads</a>.
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Pagination -->
+  {% if pages > 1 %}
+  <div class="flex items-center justify-center gap-2 mt-6">
+    {% if page > 1 %}
+    <a href="?q={{ search }}&priority={{ priority }}&city={{ city }}&type={{ btype }}&status={{ status }}&sort={{ sort }}&page={{ page-1 }}" class="btn-ghost py-1.5 px-3 text-xs">← Prev</a>
+    {% endif %}
+    <span class="text-sm text-slate-500">Page {{ page }} of {{ pages }}</span>
+    {% if page < pages %}
+    <a href="?q={{ search }}&priority={{ priority }}&city={{ city }}&type={{ btype }}&status={{ status }}&sort={{ sort }}&page={{ page+1 }}" class="btn-ghost py-1.5 px-3 text-xs">Next →</a>
+    {% endif %}
+  </div>
+  {% endif %}
+
+</div>
+
+<style>
+.health-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let checkPollInterval = null;
+
+async function startBulkCheck() {
+  const btn = document.getElementById('bulk-check-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<svg class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg> Starting…';
+
+  const r = await fetch('/api/bulk-check', { method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}' });
+  const data = await r.json();
+
+  if (data.started || data.running) {
+    document.getElementById('check-banner').classList.remove('hidden');
+    checkPollInterval = setInterval(pollCheckStatus, 2000);
+  } else {
+    btn.disabled = false;
+    btn.innerHTML = 'Recheck All';
+    alert('A check is already running.');
+  }
+}
+
+async function pollCheckStatus() {
+  const r = await fetch('/api/bulk-check/status');
+  const s = await r.json();
+
+  document.getElementById('check-done').textContent = s.done;
+  document.getElementById('check-total').textContent = s.total;
+
+  const pct = s.total > 0 ? Math.round(s.done / s.total * 100) : 0;
+  document.getElementById('check-progress-bar').style.width = pct + '%';
+
+  if (s.errors > 0) {
+    document.getElementById('check-errors-wrap').classList.remove('hidden');
+    document.getElementById('check-errors').textContent = s.errors;
+  }
+
+  if (!s.running) {
+    clearInterval(checkPollInterval);
+    document.getElementById('check-progress-bar').style.width = '100%';
+    setTimeout(() => {
+      document.getElementById('check-banner').classList.add('hidden');
+      location.reload();
+    }, 1200);
+  }
+}
+
+// Auto-poll if a check was already running when page loaded
+(async () => {
+  const r = await fetch('/api/bulk-check/status');
+  const s = await r.json();
+  if (s.running) {
+    document.getElementById('check-banner').classList.remove('hidden');
+    checkPollInterval = setInterval(pollCheckStatus, 2000);
+  }
+})();
+</script>
+{% endblock %}
