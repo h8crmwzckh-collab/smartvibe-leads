@@ -822,6 +822,7 @@ def _slack_notify_lead(name: str, phone: str, email: str, business: str):
 def api_inbound_lead():
     """Receives form submissions from smartvibe.social landing page."""
     data = request.get_json(silent=True) or {}
+    print(f"[inbound-lead] payload: {data}")
     name = data.get("name", "").strip()
     phone = data.get("phone", "").strip()
     business = data.get("business", "").strip()
