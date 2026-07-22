@@ -62,11 +62,22 @@
 
     <select name="status" class="input-field" style="width:auto">
       <option value="">All Statuses</option>
-      <option value="new" {% if status=='new' %}selected{% endif %}>New</option>
-      <option value="postcard_sent" {% if status=='postcard_sent' %}selected{% endif %}>Postcard Sent</option>
-      <option value="email_sent" {% if status=='email_sent' %}selected{% endif %}>Email Sent</option>
-      <option value="called" {% if status=='called' %}selected{% endif %}>Called</option>
-      <option value="converted" {% if status=='converted' %}selected{% endif %}>Converted</option>
+      <optgroup label="── Contact Method ──">
+        <option value="new"           {% if status=='new'           %}selected{% endif %}>🆕 Not Contacted</option>
+        <option value="postcard_sent" {% if status=='postcard_sent' %}selected{% endif %}>✉️ Postcard Sent</option>
+        <option value="email_sent"    {% if status=='email_sent'    %}selected{% endif %}>📧 Email Sent</option>
+        <option value="called"        {% if status=='called'        %}selected{% endif %}>📞 Called</option>
+      </optgroup>
+      <optgroup label="── Stage ──">
+        <option value="no_response"   {% if status=='no_response'   %}selected{% endif %}>🔇 No Response</option>
+        <option value="follow_up"     {% if status=='follow_up'     %}selected{% endif %}>🔁 Follow Up</option>
+        <option value="interested"    {% if status=='interested'    %}selected{% endif %}>👀 Interested</option>
+        <option value="call_ready"    {% if status=='call_ready'    %}selected{% endif %}>🔥 Ready to Call</option>
+        <option value="meeting_set"   {% if status=='meeting_set'   %}selected{% endif %}>📅 Meeting Set</option>
+        <option value="converted"     {% if status=='converted'     %}selected{% endif %}>✅ Converted</option>
+        <option value="not_interested"{% if status=='not_interested'%}selected{% endif %}>❌ Not Interested</option>
+        <option value="dnc"           {% if status=='dnc'           %}selected{% endif %}>🚫 DNC</option>
+      </optgroup>
     </select>
 
     <select name="sort" class="input-field" style="width:auto">

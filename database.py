@@ -454,7 +454,8 @@ def get_call_queue():
     with get_db() as conn:
         rows = conn.execute("""
             SELECT * FROM leads
-            WHERE (outreach_status IN ('email_sent', 'call_ready') OR qr_scanned=1)
+            WHERE (outreach_status IN ('email_sent', 'call_ready', 'follow_up', 'interested', 'meeting_set') OR qr_scanned=1)
+              AND outreach_status NOT IN ('dnc', 'not_interested', 'converted')
               AND (opt_in_status IS NULL OR opt_in_status != 'opted_out')
             ORDER BY qr_scanned DESC, quality_score DESC, email_sent_date ASC
         """).fetchall()

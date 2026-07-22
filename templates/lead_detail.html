@@ -60,13 +60,20 @@
     <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4">Outreach Pipeline</h2>
     {% set status = lead.outreach_status or 'new' %}
     {% set stages = [
-      ('new', 'New', ''),
-      ('postcard_sent', 'Postcard Sent', lead.postcard_sent_date),
-      ('email_sent', 'Email Sent', lead.email_sent_date),
-      ('called', 'Called', lead.called_date),
-      ('converted', 'Converted', lead.converted_date),
+      ('new', '🆕 Not Contacted', ''),
+      ('postcard_sent', '✉️ Postcard Sent', lead.postcard_sent_date),
+      ('email_sent', '📧 Email Sent', lead.email_sent_date),
+      ('called', '📞 Called', lead.called_date),
+      ('no_response', '🔇 No Response', ''),
+      ('follow_up', '🔁 Follow Up', ''),
+      ('interested', '👀 Interested', ''),
+      ('call_ready', '🔥 Ready to Call', ''),
+      ('meeting_set', '📅 Meeting Set', ''),
+      ('converted', '✅ Converted', lead.converted_date),
+      ('not_interested', '❌ Not Interested', ''),
+      ('dnc', '🚫 Do Not Call', ''),
     ] %}
-    {% set order = ['new','postcard_sent','email_sent','called','converted'] %}
+    {% set order = ['new','postcard_sent','email_sent','called','no_response','follow_up','interested','call_ready','meeting_set','converted','not_interested','dnc'] %}
     {% set current_idx = order.index(status) if status in order else 0 %}
     <div class="flex items-center gap-0">
       {% for key, label, date in stages %}
