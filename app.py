@@ -124,7 +124,8 @@ def leads_list():
     cities = get_cities()
     btypes = get_business_types()
 
-    with __import__("database").get_db() as _conn:
+    from database import get_db as _get_db
+    with _get_db() as _conn:
         no_address_count = _conn.execute(
             "SELECT COUNT(*) FROM leads WHERE address IS NULL OR TRIM(address)=''"
         ).fetchone()[0]
@@ -135,6 +136,16 @@ def leads_list():
                            search=search, priority=priority, city=city,
                            btype=btype, status=status, sort=sort,
                            no_address=no_address, no_address_count=no_address_count)
+
+
+@app.route("/api/no-address-count")
+def no_address_count():
+    from database import get_db as _get_db
+    with _get_db() as conn:
+        count = conn.execute(
+            "SELECT COUNT(*) FROM leads WHERE address IS NULL OR TRIM(address)=''"
+        ).fetchone()[0]
+    return jsonify({"count": count})
 
 
 @app.route("/leads/<int:lead_id>")
