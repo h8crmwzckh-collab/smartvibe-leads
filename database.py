@@ -430,11 +430,16 @@ def get_stats():
         qr_scans = conn.execute("SELECT COUNT(*) FROM leads WHERE qr_scanned=1").fetchone()[0]
         postcard_sent = conn.execute("SELECT COUNT(*) FROM leads WHERE outreach_status IN ('postcard_sent','email_sent','called','converted')").fetchone()[0]
         call_ready = conn.execute("SELECT COUNT(*) FROM leads WHERE outreach_status='email_sent' OR qr_scanned=1").fetchone()[0]
+        ready_to_mail = conn.execute("""
+            SELECT COUNT(*) FROM leads
+            WHERE address IS NOT NULL AND TRIM(address) != ''
+              AND outreach_status NOT IN ('postcard_sent','email_sent','called','converted','dnc','not_interested')
+        """).fetchone()[0]
     rate = round((converted / contacted * 100), 1) if contacted > 0 else 0
     return dict(
         total=total, hot=hot, warm=warm, emails=emails, owners=owners,
         converted=converted, conversion_rate=rate, qr_scans=qr_scans,
-        postcard_sent=postcard_sent, call_ready=call_ready
+        postcard_sent=postcard_sent, call_ready=call_ready, ready_to_mail=ready_to_mail
     )
 
 

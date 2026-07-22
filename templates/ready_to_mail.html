@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+  <div>
+    <h1 class="text-xl font-semibold text-white">Ready to Mail</h1>
+    <p class="text-sm text-slate-500 mt-0.5">{{ total }} leads with verified addresses — not yet contacted</p>
+  </div>
+</div>
+
+<!-- Filters -->
+<form method="GET" action="/ready-to-mail" class="flex flex-wrap items-center gap-2.5 mb-5">
+  <select name="city" class="input-field" style="width:auto">
+    <option value="">All Cities</option>
+    {% for c in cities %}<option value="{{ c }}" {% if city==c %}selected{% endif %}>{{ c }}</option>{% endfor %}
+  </select>
+
+  <select name="type" class="input-field" style="width:auto">
+    <option value="">All Types</option>
+    {% for t in btypes %}<option value="{{ t }}" {% if btype==t %}selected{% endif %}>{{ t | title }}</option>{% endfor %}
+  </select>
+
+  <select name="sort" class="input-field" style="width:auto">
+    <option value="score" {% if sort=='score' %}selected{% endif %}>Top Score</option>
+    <option value="name"  {% if sort=='name'  %}selected{% endif %}>Name A–Z</option>
+    <option value="city"  {% if sort=='city'  %}selected{% endif %}>City</option>
+    <option value="recent"{% if sort=='recent'%}selected{% endif %}>Most Recent</option>
+  </select>
+
+  <button type="submit" class="btn-primary py-2">Filter</button>
+  {% if city or btype %}
+  <a href="/ready-to-mail" class="btn-ghost py-2">Clear</a>
+  {% endif %}
+</form>
+
+<!-- Lead cards -->
+<div class="space-y-2">
+  {% for lead in leads %}
+  {% set status = lead.outreach_status or 'new' %}
+  <div class="card p-4 flex items-center gap-4 hover:border-white/20 transition-colors group">
+
+    <!-- Score badge -->
+    <div class="w-12 h-12 rounded-xl flex items-center justify-center text-sm font-bold flex-shrink-0
+      {% if lead.quality_score >= 70 %}bg-red-500/20 text-red-400
+      {% elif lead.quality_score >= 40 %}bg-yellow-500/20 text-yellow-400
+      {% else %}bg-slate-700 text-slate-400{% endif %}">
+      {{ lead.quality_score or 0 }}
+    </div>
+
+    <!-- Info -->
+    <div class="flex-1 min-w-0">
+      <div class="flex items-center gap-2 flex-wrap">
+        <span class="font-medium text-white text-sm">{{ lead.name }}</span>
+        {% if lead.owner_name %}
+        <span class="text-xs text-slate-500">· {{ lead.owner_name }}</span>
+        {% endif %}
+      </div>
+      <div class="flex items-center gap-3 mt-1 flex-wrap">
+        <span class="text-xs text-slate-500">{{ lead.city }}</span>
+        {% if lead.business_type %}
+        <span class="text-xs bg-white/5 text-slate-400 px-2 py-0.5 rounded-full">{{ lead.business_type | title }}</span>
+        {% endif %}
+      </div>
+      <!-- Address highlighted -->
+      <div class="flex items-center gap-1.5 mt-1.5">
+        <svg class="w-3.5 h-3.5 text-purple-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        <span class="text-xs text-purple-300">{{ lead.address }}</span>
+      </div>
+      {% if lead.phone %}
+      <div class="flex items-center gap-1.5 mt-0.5">
+        <svg class="w-3.5 h-3.5 text-slate-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+        <span class="text-xs text-slate-400">{{ lead.phone }}</span>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Actions -->
+    <div class="flex items-center gap-2 flex-shrink-0">
+      <!-- Send Postcard -->
+      <form action="/leads/{{ lead.id }}/send-postcard" method="POST"
+            onsubmit="return confirm('Send postcard to {{ lead.name }}?')">
+        <button type="submit"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-purple-500/20 text-purple-300 border border-purple-500/30 hover:bg-purple-500/30 transition-colors">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          Send Postcard
+        </button>
+      </form>
+
+      <!-- View lead -->
+      <a href="/leads/{{ lead.id }}"
+        class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+  </div>
+  {% endfor %}
+
+  {% if not leads %}
+  <div class="text-center py-16 text-slate-500">
+    <svg class="w-12 h-12 mx-auto mb-3 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+    <p>No leads ready to mail. <a href="/scraper" class="text-purple-400 hover:underline">Run the scraper</a> to find more.</p>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Pagination -->
+{% if pages > 1 %}
+<div class="flex items-center justify-center gap-2 mt-6">
+  {% if page > 1 %}
+  <a href="?city={{ city }}&type={{ btype }}&sort={{ sort }}&page={{ page-1 }}" class="btn-ghost py-1.5 px-3 text-xs">← Prev</a>
+  {% endif %}
+  <span class="text-xs text-slate-500">Page {{ page }} of {{ pages }}</span>
+  {% if page < pages %}
+  <a href="?city={{ city }}&type={{ btype }}&sort={{ sort }}&page={{ page+1 }}" class="btn-ghost py-1.5 px-3 text-xs">Next →</a>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

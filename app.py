@@ -166,6 +166,55 @@ def leads_list():
                            no_address=no_address, no_address_count=no_address_count)
 
 
+@app.route("/ready-to-mail")
+def ready_to_mail():
+    sort = request.args.get("sort", "score")
+    city = request.args.get("city", "")
+    btype = request.args.get("type", "")
+    page = int(request.args.get("page", 1))
+    per_page = 25
+
+    order = {
+        "score": "quality_score DESC",
+        "name": "name ASC",
+        "city": "city ASC",
+        "recent": "created_at DESC",
+    }.get(sort, "quality_score DESC")
+
+    clauses = [
+        "address IS NOT NULL", "TRIM(address) != ''",
+        "outreach_status NOT IN ('postcard_sent','email_sent','called','converted','dnc','not_interested')"
+    ]
+    params = []
+    if city:
+        clauses.append("city = ?")
+        params.append(city)
+    if btype:
+        clauses.append("business_type = ?")
+        params.append(btype)
+
+    where = " AND ".join(clauses)
+    offset = (page - 1) * per_page
+
+    from database import get_db as _get_db, get_cities, get_business_types
+    with _get_db() as conn:
+        total = conn.execute(f"SELECT COUNT(*) FROM leads WHERE {where}", params).fetchone()[0]
+        rows = conn.execute(
+            f"SELECT * FROM leads WHERE {where} ORDER BY {order} LIMIT ? OFFSET ?",
+            params + [per_page, offset]
+        ).fetchall()
+
+    leads = [dict(r) for r in rows]
+    pages = (total + per_page - 1) // per_page
+    cities = get_cities()
+    btypes = get_business_types()
+
+    return render_template("ready_to_mail.html",
+                           leads=leads, total=total, page=page, pages=pages,
+                           cities=cities, btypes=btypes,
+                           sort=sort, city=city, btype=btype)
+
+
 @app.route("/api/no-address-count")
 def no_address_count():
     from database import get_db as _get_db
