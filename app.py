@@ -113,21 +113,28 @@ def leads_list():
     status = request.args.get("status", "")
     sort = request.args.get("sort", "score")
     page = int(request.args.get("page", 1))
+    no_address = request.args.get("no_address", "")
 
     leads, total = get_leads(
         search=search, priority=priority, city=city,
         business_type=btype, status=status, sort=sort,
-        page=page, per_page=25
+        page=page, per_page=25, no_address=bool(no_address)
     )
     pages = (total + 24) // 25
     cities = get_cities()
     btypes = get_business_types()
 
+    with __import__("database").get_db() as _conn:
+        no_address_count = _conn.execute(
+            "SELECT COUNT(*) FROM leads WHERE address IS NULL OR TRIM(address)=''"
+        ).fetchone()[0]
+
     return render_template("leads.html",
                            leads=leads, total=total, page=page, pages=pages,
                            cities=cities, btypes=btypes,
                            search=search, priority=priority, city=city,
-                           btype=btype, status=status, sort=sort)
+                           btype=btype, status=status, sort=sort,
+                           no_address=no_address, no_address_count=no_address_count)
 
 
 @app.route("/leads/<int:lead_id>")

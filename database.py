@@ -330,7 +330,7 @@ def _priority_label(score):
 
 
 def get_leads(search=None, priority=None, city=None, business_type=None,
-              status=None, sort="score", page=1, per_page=30):
+              status=None, sort="score", page=1, per_page=30, no_address=False):
     clauses = ["1=1"]
     params = []
     if search:
@@ -348,6 +348,8 @@ def get_leads(search=None, priority=None, city=None, business_type=None,
     if status:
         clauses.append("outreach_status = ?")
         params.append(status)
+    if no_address:
+        clauses.append("(address IS NULL OR TRIM(address) = '')")
 
     order = {
         "score": "quality_score DESC, qr_scanned DESC",

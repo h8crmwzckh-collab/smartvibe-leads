@@ -3,11 +3,14 @@ Multi-source lead scraper: Google Maps + Yelp + BBB + Yellow Pages.
 Extracts emails from business websites, checks real social media activity,
 and scores leads based on web presence quality.
 """
+from __future__ import annotations
+
 import re
 import threading
 import time
 from datetime import datetime, timedelta
 from pathlib import Path
+from typing import Optional
 from urllib.parse import urlparse, urljoin
 
 STATIC_DIR = Path(__file__).parent / "static"
