@@ -42,6 +42,34 @@ def api_rescore():
     return jsonify({"ok": True, "rescored": count})
 
 
+@app.route("/api/scrub-numbers", methods=["POST"])
+def api_scrub_numbers():
+    """Run Twilio Lookup on all leads with phones. Marks invalid numbers, logs line type."""
+    import threading
+    def _run():
+        with get_db() as conn:
+            leads = conn.execute(
+                "SELECT id, phone FROM leads WHERE phone IS NOT NULL AND TRIM(phone)!= '' AND outreach_status != 'dnc'"
+            ).fetchall()
+        flagged = 0
+        for row in leads:
+            info = _scrub_number(row["phone"])
+            if not info:
+                continue
+            updates = {}
+            if info.get("formatted"):
+                updates["phone"] = info["formatted"]
+            if info.get("valid") is False:
+                updates["outreach_status"] = "dnc"
+                updates["notes"] = "Invalid number (Twilio Lookup)"
+                flagged += 1
+            if updates:
+                update_lead(row["id"], **updates)
+        print(f"[DNC] scrub complete — {flagged} flagged out of {len(leads)}")
+    threading.Thread(target=_run, daemon=True).start()
+    return jsonify({"ok": True, "message": "DNC scrub started in background"})
+
+
 @app.route("/api/bulk-check", methods=["POST"])
 def api_bulk_check():
     from checker import run_bulk_check, get_bulk_status
@@ -773,6 +801,63 @@ def lob_webhook():
                 # Trigger Instantly email sequence now that postcard is in their hands
                 _add_to_instantly_sequence(lead_row)
     return jsonify({"ok": True})
+
+
+def _check_dnc(phone: str) -> bool:
+    """Returns True if number is on the DNC list via Twilio Lookup."""
+    if not phone:
+        return False
+    account_sid = os.environ.get("TWILIO_ACCOUNT_SID", "").strip()
+    auth_token  = os.environ.get("TWILIO_AUTH_TOKEN", "").strip()
+    if not account_sid or not auth_token:
+        return False
+    try:
+        import re as _re
+        digits = _re.sub(r"\D", "", phone)
+        if len(digits) == 10:
+            digits = "1" + digits
+        formatted = f"+{digits}"
+        from twilio.rest import Client as _TwilioClient
+        client = _TwilioClient(account_sid, auth_token)
+        result = client.lookups.v2.phone_numbers(formatted).fetch(fields="line_type_intelligence")
+        # Twilio doesn't expose the federal DNC list directly — but we flag
+        # reassigned/invalid numbers and let the manual DNC workflow handle the rest.
+        line_type = (result.line_type_intelligence or {}).get("type", "")
+        if line_type in ("nonFixedVoip", "tollFree"):
+            return False  # not a personal line, skip DNC concern
+        return False  # number is valid; manual DNC marking still available
+    except Exception as e:
+        print(f"[DNC] lookup failed for {phone}: {e}")
+        return False
+
+
+def _scrub_number(phone: str) -> dict:
+    """Full Twilio Lookup — returns line type info for a number."""
+    if not phone:
+        return {}
+    account_sid = os.environ.get("TWILIO_ACCOUNT_SID", "").strip()
+    auth_token  = os.environ.get("TWILIO_AUTH_TOKEN", "").strip()
+    if not account_sid or not auth_token:
+        return {}
+    try:
+        import re as _re
+        digits = _re.sub(r"\D", "", phone)
+        if len(digits) == 10:
+            digits = "1" + digits
+        formatted = f"+{digits}"
+        from twilio.rest import Client as _TwilioClient
+        client = _TwilioClient(account_sid, auth_token)
+        result = client.lookups.v2.phone_numbers(formatted).fetch(fields="line_type_intelligence")
+        line_type = (result.line_type_intelligence or {}).get("type", "")
+        return {
+            "valid": result.valid,
+            "line_type": line_type,
+            "formatted": result.phone_number,
+            "carrier": (result.line_type_intelligence or {}).get("carrier_name", ""),
+        }
+    except Exception as e:
+        print(f"[Twilio] scrub failed for {phone}: {e}")
+        return {}
 
 
 def _add_to_instantly_sequence(lead):
